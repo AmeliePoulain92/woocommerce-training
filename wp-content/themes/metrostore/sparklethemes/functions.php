@@ -295,7 +295,7 @@ if ( ! function_exists( 'metrostore_breadcrumb_woocommerce' ) ) {
         }else{
           $breadcrumb_bg_image = get_template_directory_uri().'/assets/images/about.jpg';
         }
-        if($breadcrumb_options == '1') { ?>
+        if($breadcrumb_options == false) { ?>
             <div class="page_header_wrap" style="background:url('<?php echo esc_url($breadcrumb_bg_image); ?>') no-repeat center; background-size: cover; background-attachment:fixed;">
                 <div class="container">
                     <?php if( is_search() ) { ?>                    
