@@ -19,4 +19,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+the_field( 'product_cat_content', $term->taxonomy . '_' . $term->term_id );
+
 wc_get_template( 'archive-product.php' );
