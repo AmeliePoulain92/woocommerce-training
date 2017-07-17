@@ -19,6 +19,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-the_field( 'product_cat_content' );
-
-wc_get_template( 'archive-product.php' );
+wc_get_template( 'tax-product-content.php' );
