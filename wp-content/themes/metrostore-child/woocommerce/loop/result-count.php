@@ -38,7 +38,7 @@ if ( ! woocommerce_products_will_display() ) {
 
 	if ( $total <= $per_page || -1 === $per_page ) {
 		/* translators: %d: total results */
-		printf( _n( 'Показан 1 результат', 'Показаны все %d результатов', $total, 'woocommerce' ), $total );
+		printf( _n( 'Показан 1 результат', 'Показаны результаты: %d', $total, 'woocommerce' ), $total );
 	} else {
 		/* translators: 1: first result 2: last result 3: total results */
 		printf( _nx( 'Показан 1 результат', 'Показаны %1$d&ndash;%2$d в %3$d результатах', $total, 'с первым и последним результатом', 'woocommerce' ), $first, $last, $total );
