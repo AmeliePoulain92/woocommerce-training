@@ -53,8 +53,6 @@ get_header( 'shop' ); ?>
 
     </header>
 
-    	<?php the_field( 'product_cat_content' ); ?>
-
 		<?php if ( have_posts() ) : ?>
 
 			<?php
