@@ -87,6 +87,17 @@ $options['form'][] = array(
     )
 );
 
+$options['form'][] = array(
+    "name"  => __( "Search Results Page", "aws" ),
+    "desc"  => __( "Go to search results page when user clicks 'Enter' key on search form?", "aws" ),
+    "id"    => "show_page",
+    "value" => 'false',
+    "type"  => "radio",
+    'choices' => array(
+        'true'  => __( 'On', 'aws' ),
+        'false' => __( 'Off', 'aws' )
+    )
+);
 
 // Search Results Settings
 

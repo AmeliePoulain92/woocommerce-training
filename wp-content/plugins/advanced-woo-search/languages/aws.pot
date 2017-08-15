@@ -175,6 +175,12 @@ msgstr ""
 msgid "Show loader animation while searching."
 msgstr ""
 
+msgid "Search Results Page"
+msgstr ""
+
+msgid "Go to search results page when user clicks 'Enter' key on search form?"
+msgstr ""
+
 #: includes/options.php:49
 msgid "Show image"
 msgstr ""

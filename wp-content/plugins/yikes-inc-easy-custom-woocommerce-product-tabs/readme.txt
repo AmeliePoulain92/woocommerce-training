@@ -6,7 +6,7 @@ Requires at least: 3.8
 Tested up to: 4.8
 Requires WooCommerce at least: 3.0.0
 Tested WooCommerce up to: 3.1.0
-Stable tag: 1.5.15
+Stable tag: 1.5.16
 License: GPLv2 or later
 
 Add custom tabs with content to products in WooCommerce. 
@@ -75,6 +75,9 @@ Yes! Since v1.4 we've added the necessary code to ensure the custom tab data is 
 
 
 == Changelog ==
+
+= 1.5.16 - Auguest 1st, 2017 = 
+* Adding a proper deactivation hook. The plugin will leave no trace.
 
 = 1.5.15 - June 8th, 2017 =
 * WordPress 4.8 support - using the new JavaScript Editor API functions to instantiate the editor and removed requiring WordPress' wpembed plugin

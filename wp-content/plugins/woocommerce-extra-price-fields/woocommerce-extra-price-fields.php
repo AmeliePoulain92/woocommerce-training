@@ -5,7 +5,7 @@
   Author: Webholics
   Author URI: https://webholics.org
   Plugin URI: https://webholics.org
-  Version: 1.5.2
+  Version: 1.5.3
   Requires at least: 3.0.0
   Tested up to: 4.8
 
@@ -75,7 +75,11 @@ add_action( 'woocommerce_process_product_meta_variable', 'custom_woocommerce_pro
 
 function add_custom_price_front( $p, $obj ) {
 
-	$post_id = $obj->get_id();
+	if ( is_object( $obj ) ) {
+		$post_id = $obj->get_id();
+	}else{
+		$post_id = $obj;
+	}
 	$pro_price_extra_info = get_post_meta( $post_id, 'pro_price_extra_info', true );
 	$pro_price_extra_info_position = get_post_meta( $post_id, 'pro_price_extra_info_position', true );
 

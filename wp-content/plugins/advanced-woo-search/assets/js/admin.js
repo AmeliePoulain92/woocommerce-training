@@ -4,6 +4,7 @@ jQuery(document).ready(function ($) {
     var $reindexBlock = $('#aws-reindex');
     var $reindexBtn = $('#aws-reindex .button');
     var $reindexProgress = $('#aws-reindex .reindex-progress');
+    var $reindexCount = $('#aws-reindex-count strong');
     var syncStatus = 'sync';
     var processed  = 0;
     var toProcess  = 0;
@@ -43,7 +44,7 @@ jQuery(document).ready(function ($) {
 
                 processed = Math.floor( processed / toProcess * 100 );
 
-                if ( 0 === response.data.found_posts && ! response.data.start ) {
+                if ( 0 === response.data.offset && ! response.data.start ) {
 
                     // Sync finished
                     syncStatus = 'finished';
@@ -51,6 +52,8 @@ jQuery(document).ready(function ($) {
                     console.log( "Reindex finished!" );
 
                     $reindexBlock.removeClass('loading');
+
+                    $reindexCount.text( response.data.found_posts );
 
                 } else {
 

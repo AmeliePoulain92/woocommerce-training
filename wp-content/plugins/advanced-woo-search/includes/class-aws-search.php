@@ -49,6 +49,24 @@ if ( ! class_exists( 'AWS_Search' ) ) :
 
         }
 
+        /**
+         * Get caching option name
+         */
+        private function get_cache_name( $s ) {
+
+            $cache_option_name = 'aws_search_term_' . $s;
+
+            if ( has_filter('wpml_current_language') ) {
+                $current_lang = apply_filters('wpml_current_language', NULL);
+                if ( $current_lang ) {
+                    $cache_option_name = $cache_option_name . '_' . $current_lang;
+                }
+            }
+
+            return $cache_option_name;
+
+        }
+
         public function search( $keyword = ''  ) {
 
             global $wpdb;
@@ -59,19 +77,17 @@ if ( ! class_exists( 'AWS_Search' ) ) :
             $s = stripslashes( $s );
             $s = str_replace( array( "\r", "\n" ), '', $s );
 
+            $cache_option_name = $this->get_cache_name( $s );
 
             if ( $cache === 'true' ) {
 
-                $cache_option_name = 'aws_search_term_' . $s;
-
                 // Check if value was already cached
-                if ($cached_value = get_option($cache_option_name)) {
+                if ( $cached_value = get_option( $cache_option_name ) ) {
                     $cached_value['cache'] = 'cached';
                     return $cached_value;
                 }
 
             }
-
 
             $show_cats     = AWS()->get_settings( 'show_cats' );
             $show_tags     = AWS()->get_settings( 'show_tags' );
@@ -160,6 +176,7 @@ if ( ! class_exists( 'AWS_Search' ) ) :
             $query['relevance'] = '';
             $query['stock'] = '';
             $query['visibility'] = '';
+            $query['lang'] = '';
 
             $search_array = array();
             $source_array = array();
@@ -247,6 +264,16 @@ if ( ! class_exists( 'AWS_Search' ) ) :
             }
 
 
+            if ( $reindex_version && version_compare( $reindex_version, '1.20', '>=' ) ) {
+                if ( has_filter('wpml_current_language') ) {
+                    $current_lang = apply_filters( 'wpml_current_language', NULL );
+                    if ( $current_lang ) {
+                        $query['lang'] .= $wpdb->prepare( " AND lang LIKE %s", $current_lang );
+                    }
+                }
+            }
+
+
             $sql = "SELECT
                     distinct ID,
                     {$query['relevance']} as relevance
@@ -258,6 +285,7 @@ if ( ! class_exists( 'AWS_Search' ) ) :
                 {$query['search']}
                 {$query['stock']}
                 {$query['visibility']}
+                {$query['lang']}
                 GROUP BY ID
                 ORDER BY
                     relevance DESC
@@ -271,8 +299,8 @@ if ( ! class_exists( 'AWS_Search' ) ) :
         }
 
         /*
-     * Get array of included to search result posts ids
-     */
+         * Get array of included to search result posts ids
+         */
         private function get_posts_ids( $sql ) {
 
             global $wpdb;
@@ -318,6 +346,10 @@ if ( ! class_exists( 'AWS_Search' ) ) :
                 foreach ( $posts_ids as $post_id ) {
 
                     $product = wc_get_product( $post_id );
+
+                    if( ! is_a( $product, 'WC_Product' ) ) {
+                        continue;
+                    }
 
                     $post_data = get_post( $post_id );
 
@@ -529,12 +561,23 @@ if ( ! class_exists( 'AWS_Search' ) ) :
 
                 foreach ( $search_results as $result ) {
 
-                    $term = get_term( $result->term_id, $result->taxonomy );
+                    if ( ! $result->count > 0 ) {
+                        continue;
+                    }
+
+                    if ( function_exists( 'wpml_object_id_filter' )  ) {
+                        $term = wpml_object_id_filter( $result->term_id, $result->taxonomy );
+                        if ( $term != $result->term_id ) {
+                            continue;
+                        }
+                    } else {
+                        $term = get_term( $result->term_id, $result->taxonomy );
+                    }
 
                     if ( $term != null && !is_wp_error( $term ) ) {
                         $term_link = get_term_link( $term );
                     } else {
-                        $term_link = '';
+                        continue;
                     }
 
                     $new_result = array(

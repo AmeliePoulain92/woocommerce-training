@@ -269,6 +269,7 @@
         self.data( pluginPfx, {
             minChars  : ( self.data('min-chars')   !== undefined ) ? self.data('min-chars') : 1,
             showLoader: ( self.data('show-loader') !== undefined ) ? self.data('show-loader') : true,
+            showPage: ( self.data('show-page') !== undefined ) ? self.data('show-page') : true,
             useAnalytics: ( self.data('use-analytics') !== undefined ) ? self.data('use-analytics') : false,
             instance: instance,
             resultBlock: '#aws-search-result-' + instance
@@ -291,6 +292,13 @@
 
         $searchField.on( 'focus', function (e) {
             methods.onFocus(e);
+        });
+
+
+        $searchForm.on( 'keypress', function(e) {
+            if ( e.keyCode == 13 && ! d.showPage ) {
+                e.preventDefault();
+            }
         });
 
 

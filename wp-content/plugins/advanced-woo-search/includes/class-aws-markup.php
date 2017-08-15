@@ -29,7 +29,16 @@ if ( ! class_exists( 'AWS_Markup' ) ) :
             $placeholder   = AWS()->get_settings( 'search_field_text' );
             $min_chars     = AWS()->get_settings( 'min_chars' );
             $show_loader   = AWS()->get_settings( 'show_loader' );
+            $show_page     = AWS()->get_settings( 'show_page' );
             $use_analytics = AWS()->get_settings( 'use_analytics' );
+
+            $url_array = parse_url( home_url() );
+            $url_query_parts = array();
+
+            if ( isset( $url_array['query'] ) && $url_array['query'] ) {
+                parse_str( $url_array['query'], $url_query_parts );
+            }
+
 
             $params_string = '';
 
@@ -37,6 +46,7 @@ if ( ! class_exists( 'AWS_Markup' ) ) :
                 'data-url'           => admin_url('admin-ajax.php'),
                 'data-siteurl'       => home_url(),
                 'data-show-loader'   => $show_loader,
+                'data-show-page'     => $show_page,
                 'data-use-analytics' => $use_analytics,
                 'data-min-chars'     => $min_chars,
             );
@@ -51,6 +61,13 @@ if ( ! class_exists( 'AWS_Markup' ) ) :
             $markup .= '<input  type="text" name="s" value="' . get_search_query() . '" class="aws-search-field" placeholder="' . $placeholder . '" autocomplete="off" />';
             $markup .= '<input type="hidden" name="post_type" value="product">';
             $markup .= '<input type="hidden" name="type_aws" value="true">';
+
+            if ( $url_query_parts ) {
+                foreach( $url_query_parts as $url_query_key => $url_query_value  ) {
+                    $markup .= '<input type="hidden" name="' . $url_query_key . '" value="' . $url_query_value . '">';
+                }
+            }
+
             $markup .= '<div class="aws-search-result" style="display: none;"></div>';
             $markup .= '</form>';
             $markup .= '</div>';

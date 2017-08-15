@@ -66,6 +66,8 @@ if ( ! class_exists( 'AWS_Table' ) ) :
 
                 $this->create_table();
 
+                $index_meta['found_posts'] = $this->get_number_of_products();
+
             } else if ( ! empty( $index_meta['site_stack'] ) && $index_meta['offset'] >= $index_meta['found_posts'] ) {
                 $status = 'start';
 
@@ -77,7 +79,7 @@ if ( ! class_exists( 'AWS_Table' ) ) :
             }
 
             $index_meta = apply_filters( 'aws_index_meta', $index_meta );
-            $posts_per_page = apply_filters( 'aws_index_posts_per_page', 100 );
+            $posts_per_page = apply_filters( 'aws_index_posts_per_page', 50 );
 
 
             $args = array(
@@ -87,26 +89,24 @@ if ( ! class_exists( 'AWS_Table' ) ) :
                 'post_status'         => 'publish',
                 'offset'              => $index_meta['offset'],
                 'ignore_sticky_posts' => true,
+                'suppress_filters'    => true,
+                'no_found_rows'       => 1,
                 'orderby'             => 'ID',
                 'order'               => 'DESC',
             );
 
-            $query = new WP_Query( $args );
 
-            $index_meta['found_posts'] = $query->found_posts;
+            $posts = get_posts( $args );
 
             if ( $status !== 'start' ) {
 
-                if ( $query->have_posts() ) {
+                if ( $posts && count( $posts ) > 0 ) {
+
                     $queued_posts = array();
 
-                    while ( $query->have_posts() ) {
-                        $query->the_post();
-
-                        $queued_posts[] = absint( get_the_ID() );
-
+                    foreach( $posts as $post_id ) {
+                        $queued_posts[] = absint( $post_id );
                     }
-
 
                     $this->fill_table( $queued_posts );
 
@@ -121,7 +121,7 @@ if ( ! class_exists( 'AWS_Table' ) ) :
                 } else {
                     // We are done (with this site)
 
-                    $index_meta['offset'] = (int) $query->found_posts;
+                    $index_meta['offset'] = (int) count( $posts );
 
                     delete_option( 'aws_index_meta' );
 
@@ -138,6 +138,36 @@ if ( ! class_exists( 'AWS_Table' ) ) :
             }
 
             wp_send_json_success( $index_meta );
+
+        }
+
+        /*
+         * Get total number of products
+         */
+        private function get_number_of_products() {
+
+            $args = array(
+                'posts_per_page'      => -1,
+                'fields'              => 'ids',
+                'post_type'           => 'product',
+                'post_status'         => 'publish',
+                'ignore_sticky_posts' => true,
+                'suppress_filters'    => true,
+                'no_found_rows'       => 1,
+                'orderby'             => 'ID',
+                'order'               => 'DESC',
+            );
+
+
+            $posts = get_posts( $args );
+
+            if ( $posts && count( $posts ) > 0 ) {
+                $count = count( $posts );
+            } else {
+                $count = 0;
+            }
+
+            return $count;
 
         }
 
@@ -168,7 +198,8 @@ if ( ! class_exists( 'AWS_Table' ) ) :
                       type VARCHAR(50) NOT NULL DEFAULT 0,
                       count BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
                       in_stock INT(11) NOT NULL DEFAULT 0,
-                      visibility VARCHAR(20) NOT NULL DEFAULT 0
+                      visibility VARCHAR(20) NOT NULL DEFAULT 0,
+                      lang VARCHAR(20) NOT NULL DEFAULT 0
                 ) $charset_collate;";
 
             require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -181,27 +212,32 @@ if ( ! class_exists( 'AWS_Table' ) ) :
          */
         private function fill_table( $posts ) {
 
-            global $wpdb;
-
             foreach ( $posts as $found_post_id ) {
 
-                $values = array();
+                $data = array();
 
-                $terms  = array();
-                $id     = $found_post_id;
+                $data['terms'] = array();
+                $data['id'] = $found_post_id;
 
-                $product = wc_get_product( $id );
+                $product = wc_get_product( $data['id'] );
 
-                $in_stock = ( $product->get_stock_status() === 'outofstock' ) ? 0 : 1;
-                $visibility = $product->get_catalog_visibility() ? $product->get_catalog_visibility() : ( $product->get_visibility() ? $product->get_visibility() : 'visible' );
+                if( ! is_a( $product, 'WC_Product' ) ) {
+                    continue;
+                }
+
+                $lang = has_filter( 'wpml_post_language_details' ) ? apply_filters( 'wpml_post_language_details', NULL, $data['id'] ) : '';
+
+                $data['in_stock'] = method_exists( $product, 'get_stock_status' ) ? ( ( $product->get_stock_status() === 'outofstock' ) ? 0 : 1 ) : ( method_exists( $product, 'is_in_stock' ) ? $product->is_in_stock() : 1 );
+                $data['visibility'] = method_exists( $product, 'get_catalog_visibility' ) ? $product->get_catalog_visibility() : ( method_exists( $product, 'get_visibility' ) ? $product->get_visibility() : 'visible' );
+                $data['lang'] = $lang ? $lang['language_code'] : '';
 
                 $sku = $product->get_sku();
 
-                $title = apply_filters( 'the_title', get_the_title( $id ) );
-                $content = apply_filters( 'the_content', get_post_field( 'post_content', $id ) );
-                $excerpt = get_post_field( 'post_excerpt', $id );
-                $cat_names = $this->get_terms_names_list( $id, 'product_cat' );
-                $tag_names = $this->get_terms_names_list( $id, 'product_tag' );
+                $title = apply_filters( 'the_title', get_the_title( $data['id'] ) );
+                $content = apply_filters( 'the_content', get_post_field( 'post_content', $data['id'] ) );
+                $excerpt = get_post_field( 'post_excerpt', $data['id'] );
+                $cat_names = $this->get_terms_names_list( $data['id'], 'product_cat' );
+                $tag_names = $this->get_terms_names_list( $data['id'], 'product_tag' );
 
 
                 // Get all child products if exists
@@ -234,7 +270,6 @@ if ( ! class_exists( 'AWS_Table' ) ) :
 
                 }
 
-
                 // WP 4.2 emoji strip
                 if ( function_exists( 'wp_encode_emoji' ) ) {
                     $content = wp_encode_emoji( $content );
@@ -243,47 +278,105 @@ if ( ! class_exists( 'AWS_Table' ) ) :
                 $content = strip_shortcodes( $content );
 
 
-                $terms['title']    = $this->extract_terms( $title );
-                $terms['content']  = $this->extract_terms( $content );
-                $terms['excerpt']  = $this->extract_terms( $excerpt );
-                $terms['sku']      = $this->extract_terms( $sku );
-                $terms['category'] = $this->extract_terms( $cat_names );
-                $terms['tag']      = $this->extract_terms( $tag_names );
+                $data['terms']['title']    = $this->extract_terms( $title );
+                $data['terms']['content']  = $this->extract_terms( $content );
+                $data['terms']['excerpt']  = $this->extract_terms( $excerpt );
+                $data['terms']['sku']      = $this->extract_terms( $sku );
+                $data['terms']['category'] = $this->extract_terms( $cat_names );
+                $data['terms']['tag']      = $this->extract_terms( $tag_names );
 
 
-                foreach( $terms as $source => $all_terms ) {
+                // Get translations if exists
+                if ( has_filter('wpml_element_has_translations') && has_filter('wpml_get_element_translations') ) {
 
-                    foreach ( $all_terms as $term => $count ) {
+                    $is_translated = apply_filters( 'wpml_element_has_translations', NULL, $data['id'], 'post_product' );
 
-                        if ( ! $term ) {
-                            continue;
+                    if ( $is_translated ) {
+
+                        $translations = apply_filters( 'wpml_get_element_translations', NULL, $data['id'], 'post_product');
+
+                        foreach( $translations as $language => $lang_obj ) {
+                            if ( ! $lang_obj->original && $lang_obj->post_status === 'publish' ) {
+                                $translated_post =  get_post( $lang_obj->element_id );
+                                if ( $translated_post && !empty( $translated_post ) ) {
+
+                                    $translated_post_data = array();
+                                    $translated_post_data['id'] = $translated_post->ID;
+                                    $translated_post_data['in_stock'] = $data['in_stock'];
+                                    $translated_post_data['visibility'] = $data['visibility'];
+                                    $translated_post_data['lang'] = $lang_obj->language_code;
+                                    $translated_post_data['terms'] = array();
+
+                                    $translated_title = apply_filters( 'the_title', get_the_title( $translated_post->ID ) );
+                                    $translated_content = apply_filters( 'the_content', get_post_field( 'post_content', $translated_post->ID ) );
+                                    $translated_excerpt = get_post_field( 'post_excerpt', $translated_post->ID );
+
+
+                                    $translated_post_data['terms']['title'] = $this->extract_terms( $translated_title );
+                                    $translated_post_data['terms']['content'] = $this->extract_terms( $translated_content );
+                                    $translated_post_data['terms']['excerpt'] = $this->extract_terms( $translated_excerpt );
+                                    $translated_post_data['terms']['sku'] = $this->extract_terms( $sku );
+
+
+                                    //Insert translated product data into table
+                                    $this->insert_into_table( $translated_post_data );
+
+                                }
+                            }
                         }
-
-                        $value = $wpdb->prepare(
-                            "(%d, %s, %s, %s, %d, %d, %s)",
-                            $id, $term, $source, 'product', $count, $in_stock, $visibility
-                        );
-
-                        $values[] = $value;
 
                     }
 
                 }
 
 
-                if ( count( $values ) > 0 ) {
+                //Insert data into table
+                $this->insert_into_table( $data );
 
-                    $values = implode( ', ', $values );
 
-                    $query  = "INSERT IGNORE INTO {$this->table_name}
-				              (`id`, `term`, `term_source`, `type`, `count`, `in_stock`, `visibility`)
-				              VALUES $values
-                    ";
+            }
 
-                    $wpdb->query( $query );
+        }
+
+        /*
+         * Scrap all product data and insert to table
+         */
+        private function insert_into_table( $data ) {
+
+            global $wpdb;
+
+            $values = array();
+
+            foreach( $data['terms'] as $source => $all_terms ) {
+
+                foreach ( $all_terms as $term => $count ) {
+
+                    if ( ! $term ) {
+                        continue;
+                    }
+
+                    $value = $wpdb->prepare(
+                        "(%d, %s, %s, %s, %d, %d, %s, %s)",
+                        $data['id'], $term, $source, 'product', $count, $data['in_stock'], $data['visibility'], $data['lang']
+                    );
+
+                    $values[] = $value;
 
                 }
 
+            }
+
+
+            if ( count( $values ) > 0 ) {
+
+                $values = implode( ', ', $values );
+
+                $query  = "INSERT IGNORE INTO {$this->table_name}
+				              (`id`, `term`, `term_source`, `type`, `count`, `in_stock`, `visibility`, `lang`)
+				              VALUES $values
+                    ";
+
+                $wpdb->query( $query );
 
             }
 
@@ -309,12 +402,13 @@ if ( ! class_exists( 'AWS_Table' ) ) :
             $wpdb->delete( $this->table_name, array( 'id' => $post_id ) );
 
             $posts = get_posts( array(
-                'posts_per_page'  => -1,
-                'fields'          => 'ids',
-                'post_type'       => 'product',
-                'post_status'     => 'publish',
-                'no_found_rows'   => 1,
-                'include'         => $post_id
+                'posts_per_page'   => -1,
+                'fields'           => 'ids',
+                'post_type'        => 'product',
+                'post_status'      => 'publish',
+                'suppress_filters' => false,
+                'no_found_rows'    => 1,
+                'include'          => $post_id
             ) );
 
             $this->fill_table( $posts );
@@ -348,12 +442,13 @@ if ( ! class_exists( 'AWS_Table' ) ) :
             $wpdb->delete( $this->table_name, array( 'id' => $product_id ) );
 
             $posts = get_posts( array(
-                'posts_per_page'  => -1,
-                'fields'          => 'ids',
-                'post_type'       => 'product',
-                'post_status'     => 'publish',
-                'no_found_rows'   => 1,
-                'include'         => $product_id
+                'posts_per_page'   => -1,
+                'fields'           => 'ids',
+                'post_type'        => 'product',
+                'post_status'      => 'publish',
+                'suppress_filters' => false,
+                'no_found_rows'    => 1,
+                'include'          => $product_id
             ) );
 
             $this->fill_table( $posts );

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.me/webholics
 Requires at least: 3.0.5
 Tags:woocommerce,ecommerce,woocommerce price extension
 Tested up to: 4.8
-Stable tag: 1.5.2
+Stable tag: 1.5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
