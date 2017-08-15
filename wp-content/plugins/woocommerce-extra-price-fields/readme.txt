@@ -4,7 +4,7 @@ Donate link: https://www.paypal.me/webholics
 Requires at least: 3.0.5
 Tags:woocommerce,ecommerce,woocommerce price extension
 Tested up to: 4.8
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,14 +19,14 @@ It can  be used to show extra info with price e.g $250 per 100gm
 = Features: =
 
 * Supports latest woocommerce
-* Automatically shows extra info with price in frontend , no setting required
-* Please send me your feedback  <a href="https://webholics.org/contact/">here</a> for any new features you want to see in next version of this plugin.I will be glad to receive feedback.
+* Automatically shows price in front end , no setting required
 
-= Want to contribute =
 
-If you want to contribute , please check the github repo
-https://github.com/aman086/Woocommerce-extra-price-fields
+= <a href="https://webholics.org/downloads/woocommerce-extra-price-fields-pro/">Get Pro version for more features</a> =
 
+* Show extra price info in Cart
+* Show extra price info in Checkout
+* Show extra price info in Order Emails (coming soon)
 
 == Installation ==
 
@@ -54,9 +54,11 @@ Please send me your feedback  <a href="https://webholics.org/contact/">here</a> 
 
 
 == Changelog ==
+= 1.5.2 =
+* Added help text.
+
 = 1.5.1 =
 * Moved extra price info settings to Advanced tab.
-
 
 = 1.5 =
 * Added option to text before price.

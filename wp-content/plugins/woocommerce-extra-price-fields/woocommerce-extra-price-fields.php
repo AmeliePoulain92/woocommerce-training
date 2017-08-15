@@ -5,7 +5,7 @@
   Author: Webholics
   Author URI: https://webholics.org
   Plugin URI: https://webholics.org
-  Version: 1.5.1
+  Version: 1.5.2
   Requires at least: 3.0.0
   Tested up to: 4.8
 
@@ -42,7 +42,8 @@ function add_custom_price_box() {
 		array(
 			'id' => 'pro_price_extra_info_position',
 			'class' => 'wc_input_price_extra_info_position',
-			'label' => __( 'Display extra info before price', 'woocommerce' )
+			'label' => __( 'Display extra info before price', 'woocommerce' ),
+			'description' =>'<br/>Show price info in cart, checkout pages with <a href="https://https://webholics.org/downloads/woocommerce-extra-price-fields-pro/">pro version</a>'
 		)
 	);
 
@@ -50,10 +51,10 @@ function add_custom_price_box() {
 
 add_action( 'woocommerce_product_options_advanced', 'add_custom_price_box' );
 
-add_action( 'woocommerce_product_options_general_product_data', 'wh_show_settings_moved_notice' );
+add_action('woocommerce_product_options_general_product_data','wh_show_settings_moved_notice');
 
-function wh_show_settings_moved_notice() {
-	echo '<div>You can set extra price info from Advanced tab now</div>';
+function wh_show_settings_moved_notice(){
+echo '<div>You can set extra price info from Advanced tab now</div>';
 }
 
 
@@ -92,7 +93,7 @@ function add_custom_price_front( $p, $obj ) {
 	if ( !empty( $additional_price ) ) {
 		if ( $pro_price_extra_info_position == 'yes' ) {
 			return $additional_price . $p;
-		} else {
+		}else {
 			return  $p . $additional_price;
 		}
 
@@ -104,3 +105,5 @@ function add_custom_price_front( $p, $obj ) {
 
 add_filter( 'woocommerce_get_price_html', 'add_custom_price_front', 10, 2 );
 add_filter( 'woocommerce_get_variation_price_html', 'add_custom_price_front', 10, 2 );
+
+

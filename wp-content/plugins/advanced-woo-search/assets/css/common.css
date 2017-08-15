@@ -70,7 +70,7 @@
     margin: 0 !important;
 
     max-height: 300px;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 .aws-search-result ul li {

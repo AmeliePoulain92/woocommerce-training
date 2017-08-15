@@ -192,8 +192,8 @@ if ( ! class_exists( 'AWS_Table' ) ) :
 
                 $product = wc_get_product( $id );
 
-                $in_stock = ( $product->stock_status === 'outofstock' ) ? 0 : 1;
-                $visibility = $product->catalog_visibility ? $product->catalog_visibility : ( $product->visibility ? $product->visibility : 'visible' );
+                $in_stock = ( $product->get_stock_status() === 'outofstock' ) ? 0 : 1;
+                $visibility = $product->get_catalog_visibility() ? $product->get_catalog_visibility() : ( $product->get_visibility() ? $product->get_visibility() : 'visible' );
 
                 $sku = $product->get_sku();
 
