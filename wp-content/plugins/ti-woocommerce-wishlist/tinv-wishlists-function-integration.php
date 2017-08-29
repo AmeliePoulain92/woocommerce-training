@@ -645,7 +645,7 @@ if ( ! function_exists( 'tinvwl_row_woocommerce_composite_products' ) ) {
 						$product_image = sprintf( '<a href="%s">%s</a>', esc_url( $product_url ), $product_image );
 						$product_title = sprintf( '<a href="%s">%s</a>', esc_url( $product_url ), $product_title );
 					}
-					$product_title .= tinv_wishlist_get_item_data( $composited_product );
+					$product_title .= tinv_wishlist_get_item_data( $composited_product, $wl_product );
 
 					$availability = (array) $composited_product->get_availability();
 					if ( ! array_key_exists( 'availability', $availability ) ) {
@@ -747,7 +747,7 @@ if ( ! function_exists( 'tinvwl_row_woocommerce_product_bundles' ) ) {
 						$product_image = sprintf( '<a href="%s">%s</a>', esc_url( $product_url ), $product_image );
 						$product_title = sprintf( '<a href="%s">%s</a>', esc_url( $product_url ), $product_title );
 					}
-					$product_title .= tinv_wishlist_get_item_data( $bundled_item->product );
+					$product_title .= tinv_wishlist_get_item_data( $bundled_item->product, $wl_product );
 
 					$availability = (array) $bundled_item->product->get_availability();
 					if ( ! array_key_exists( 'availability', $availability ) ) {
@@ -894,7 +894,7 @@ if ( ! function_exists( 'tinvwl_row_woocommerce_mix_and_match_products' ) ) {
 						$product_image = sprintf( '<a href="%s">%s</a>', esc_url( $product_url ), $product_image );
 						$product_title = sprintf( '<a href="%s">%s</a>', esc_url( $product_url ), $product_title );
 					}
-					$product_title .= tinv_wishlist_get_item_data( $mnm_item );
+					$product_title .= tinv_wishlist_get_item_data( $mnm_item, $wl_product );
 
 					$availability = (array) $mnm_item->get_availability();
 					if ( ! array_key_exists( 'availability', $availability ) ) {

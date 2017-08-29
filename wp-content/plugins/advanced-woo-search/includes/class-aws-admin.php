@@ -17,6 +17,27 @@ class AWS_Admin {
      */
     var $page_name = 'aws-options';
 
+    /**
+     * @var AWS_Admin The single instance of the class
+     */
+    protected static $_instance = null;
+
+
+    /**
+     * Main AWS_Admin Instance
+     *
+     * Ensures only one instance of AWS_Admin is loaded or can be loaded.
+     *
+     * @static
+     * @return AWS_Admin - Main instance
+     */
+    public static function instance() {
+        if ( is_null( self::$_instance ) ) {
+            self::$_instance = new self();
+        }
+        return self::$_instance;
+    }
+
     /*
     * Constructor
     */
@@ -183,7 +204,7 @@ class AWS_Admin {
                     <tr valign="top">
                         <th scope="row"><?php echo $value['name']; ?></th>
                         <td>
-                            <textarea id="<?php echo $value['id']; ?>" name="<?php echo $value['id']; ?>" cols="45" rows="3"><?php print stripslashes( $plugin_options[ $value['id'] ] ); ?></textarea>
+                            <textarea id="<?php echo $value['id']; ?>" name="<?php echo $value['id']; ?>" cols="65" rows="4"><?php print stripslashes( $plugin_options[ $value['id'] ] ); ?></textarea>
                             <br><span class="description"><?php echo $value['desc']; ?></span>
                         </td>
                     </tr>
@@ -447,4 +468,4 @@ class AWS_Admin {
 endif;
 
 
-new AWS_Admin();
+add_action( 'init', 'AWS_Admin::instance' );

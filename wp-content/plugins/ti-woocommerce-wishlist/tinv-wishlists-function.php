@@ -314,14 +314,19 @@ if ( ! function_exists( 'tinv_wishlist_get_item_data' ) ) {
 	 *
 	 * @return string
 	 */
-	function tinv_wishlist_get_item_data( $product, $flat = false ) {
-		$item_data		 = array();
-		$variation_id	 = version_compare( WC_VERSION, '3.0.0', '<' ) ? $product->variation_id : ( $product->is_type( 'variation' ) ? $product->get_id() : 0 );
-		$variation_data	 = version_compare( WC_VERSION, '3.0.0', '<' ) ? $product->variation_data : ( $product->is_type( 'variation' ) ? wc_get_product_variation_attributes( $product->get_id() ) : array() );
+	function tinv_wishlist_get_item_data( $product, $wl_product = array(), $flat = false ) {
+		$item_data      = array();
+		$variation_id   = version_compare( WC_VERSION, '3.0.0', '<' ) ? $product->variation_id : ( $product->is_type( 'variation' ) ? $product->get_id() : 0 );
+		$variation_data = version_compare( WC_VERSION, '3.0.0', '<' ) ? $product->variation_data : ( $product->is_type( 'variation' ) ? wc_get_product_variation_attributes( $product->get_id() ) : array() );
 		if ( ! empty( $variation_id ) && is_array( $variation_data ) ) {
 			foreach ( $variation_data as $name => $value ) {
 				if ( '' === $value ) {
-					continue;
+					// Could be any value that saved to a custom meta.
+					if ( array_key_exists( 'meta', $wl_product ) && array_key_exists( $name, $wl_product['meta'] ) ) {
+						$value = $wl_product['meta'][ $name ];
+					} else {
+						continue;
+					}
 				}
 
 				$taxonomy = wc_attribute_taxonomy_name( str_replace( 'attribute_pa_', '', urldecode( $name ) ) );

@@ -113,6 +113,20 @@ class TInvWL_Public_Cart {
 		$quantity		 = empty( $wl_quantity ) ? 1 : wc_stock_amount( $wl_quantity );
 		$variation_id	 = $product['variation_id'];
 		$variations		 = ( version_compare( WC_VERSION, '3.0.0', '<' ) ? $product['data']->variation_data : ( $product['data']->is_type( 'variation' ) ? wc_get_product_variation_attributes( $product['data']->get_id() ) : array() ) );
+
+		if ( ! empty( $variation_id ) && is_array( $variations ) ) {
+			foreach ( $variations as $name => $value ) {
+				if ( '' === $value ) {
+					// Could be any value that saved to a custom meta.
+					if ( array_key_exists( 'meta', $product ) && array_key_exists( $name, $product['meta'] ) ) {
+						$variations[ $name ] = $product['meta'][ $name ];
+					} else {
+						continue;
+					}
+				}
+			}
+		}
+
 		$passed_validation = $product['data']->is_purchasable() && ( $product['data']->is_in_stock() || $product['data']->backorders_allowed() ) && 'external' !== ( version_compare( WC_VERSION, '3.0.0', '<' ) ? $product['data']->product_type : $product['data']->get_type() );
 		$passed_validation = apply_filters( 'woocommerce_add_to_cart_validation', $passed_validation, $product_id, $quantity, $variation_id, $variations );
 		if ( $passed_validation ) {

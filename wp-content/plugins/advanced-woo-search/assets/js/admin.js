@@ -5,10 +5,9 @@ jQuery(document).ready(function ($) {
     var $reindexBtn = $('#aws-reindex .button');
     var $reindexProgress = $('#aws-reindex .reindex-progress');
     var $reindexCount = $('#aws-reindex-count strong');
-    var syncStatus = 'sync';
-    var processed  = 0;
-    var toProcess  = 0;
-    var processed = 0;
+    var syncStatus;
+    var processed;
+    var toProcess;
 
     var $clearCacheBtn = $('#aws-clear-cache .button');
 
@@ -18,7 +17,12 @@ jQuery(document).ready(function ($) {
 
         e.preventDefault();
 
+        syncStatus = 'sync';
+        toProcess  = 0;
+        processed = 0;
+
         $reindexBlock.addClass('loading');
+        $reindexProgress.html ( processed + '%' );
 
         sync();
 

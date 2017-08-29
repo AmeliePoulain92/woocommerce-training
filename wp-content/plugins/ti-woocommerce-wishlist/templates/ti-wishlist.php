@@ -82,7 +82,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 									echo apply_filters( 'tinvwl_wishlist_item_name', sprintf( '<a href="%s">%s</a>', esc_url( $product_url ), $product->get_title() ), $wl_product, $product ); // WPCS: xss ok.
 								}
 
-								echo apply_filters( 'tinvwl_wishlist_item_meta_data', tinv_wishlist_get_item_data( $product ), $wl_product, $product ); // WPCS: xss ok.
+								echo apply_filters( 'tinvwl_wishlist_item_meta_data', tinv_wishlist_get_item_data( $product, $wl_product ), $wl_product, $product ); // WPCS: xss ok.
 								?>
 							</td>
 							<?php if ( $wishlist_table_row['colm_price'] ) { ?>

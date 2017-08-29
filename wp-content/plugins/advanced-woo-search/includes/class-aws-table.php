@@ -489,6 +489,8 @@ if ( ! class_exists( 'AWS_Table' ) ) :
          */
         private function extract_terms( $str ) {
 
+            $stopwords = AWS()->get_settings( 'stopwords' );
+
             $str = AWS_Helpers::html2txt( $str );
 
             // Avoid single A-Z.
@@ -568,6 +570,22 @@ if ( ! class_exists( 'AWS_Table' ) ) :
             $str = trim( preg_replace( '/\s+/', ' ', $str ) );
 
             $str_array = array_count_values( explode( ' ', $str ) );
+
+
+            if ( $stopwords && $str_array && ! empty( $str_array ) ) {
+                $stopwords_array = explode( ',', $stopwords );
+                if ( $stopwords_array && ! empty( $stopwords_array ) ) {
+                    $stopwords_array = array_map( 'trim', $stopwords_array );
+
+                    foreach ( $str_array as $str_word => $str_count ) {
+                        if ( in_array( $str_word, $stopwords_array ) ) {
+                            unset( $str_array[$str_word] );
+                        }
+                    }
+
+                }
+            }
+
 
             return $str_array;
 
